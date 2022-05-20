@@ -13,7 +13,7 @@ services:
       - backend
 
 
-python:
+  python:
     image: python:3.5
     container_name: python
     build: ./app
