@@ -8,7 +8,7 @@ terraform {
   required_version = ">= 0.14.9"
 }
 
-provider "aws" { #указание провайдера, региона
+provider "aws" {
   region = "us-east-1"
 }
 
@@ -207,3 +207,84 @@ resource "aws_ecs_service" "ecs-svc-terraform-homework-1" {
     assign_public_ip = true
   }
 }
+
+##Create ECS security group(ecs-sec-gr)
+resource "aws_security_group" "ecs-sec-gr-terraform-homework-1" {
+  name        = "ecs-sec-gr-terraform-homework-1"
+  description = "Allow access from the SSH only"
+  vpc_id      = aws_vpc.vpc-terraform-homework-1.id
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+#Create RDS postgres(rds) 
+resource "aws_db_instance" "rds-terraform-homework-1" {
+  name                    = "rds_terraform_homework_1"
+  identifier              = "postgres"
+  engine                  = "postgres"
+  allocated_storage       = 20
+  engine_version          = "13.3"
+  port                    = "5432"
+  username                = var.rds-username
+  password                = var.rds-password
+  instance_class          = var.rds-instance-class
+  vpc_security_group_ids  = [aws_security_group.rds-sec-gr-terraform-homework-1.id]
+  db_subnet_group_name    = aws_db_subnet_group.rds-sub-gr-terraform-homework-1.name
+  storage_type            = "gp2"
+  skip_final_snapshot     = true
+}
+
+#Create RDS subnet group(rds-sub-gr)
+resource "aws_db_subnet_group" "rds-sub-gr-terraform-homework-1" {
+  name       = "rds-sub-gr-terraform-homework-1"
+  subnet_ids = [aws_subnet.subnet-private-a-terraform-homework-1.id, aws_subnet.subnet-private-b-terraform-homework-1.id]
+}
+
+#Create RDS security group(rds-sec-gr)
+resource "aws_security_group" "rds-sec-gr-terraform-homework-1" {
+  name        = "rds-sec-gr-terraform-homework-1"
+  description = "Allow access from ECS cluster only"
+  vpc_id      = aws_vpc.vpc-terraform-homework-1.id
+
+  ingress {
+    protocol        = "tcp"
+    from_port       = "5432"
+    to_port         = "5432"
+    security_groups = [aws_security_group.ecs-sec-gr-terraform-homework-1.id]
+  }
+
+  egress {
+    protocol    = "-1"
+    from_port   = 0
+    to_port     = 0
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+
+
+/*
+#
+data "local_file" "sql_script" {
+  filename = "${path.module}/init/db_structure.sql"
+}
+
+resource "null_resource" "db_setup" {
+  depends_on = [module.db, aws_security_group.rds_main, aws_default_security_group.default]
+  provisioner "local-exec" {
+    command = "mysql --host=${module.db.this_db_instance_address} --port=${var.dbport} --user=${var.dbusername} --password=${var.dbpassword} --database=${var.dbname} < ${data.local_file.sql_script.content}"
+  }
+}
+*/
