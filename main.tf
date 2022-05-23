@@ -158,6 +158,7 @@ resource "aws_ecs_task_definition" "ecstd-terraform-homework-1" {
     "essential": true,
     "environment": [
       {"name": "PG_HOST", "value": "${data.aws_db_instance.rds-terraform-homework-1.endpoint}"}
+    ]
   }
 ]
 TASK_DEFINITION
@@ -233,8 +234,8 @@ resource "aws_security_group" "ecs-sec-gr-terraform-homework-1" {
 
 #Create RDS postgres(rds) 
 resource "aws_db_instance" "rds-terraform-homework-1" {
-  name                    = "rds-terraform-homework-1"
-  #identifier              = "postgres"
+  name                    = "postgres"
+  identifier              = "postgres"
   engine                  = "postgres"
   allocated_storage       = 20
   engine_version          = "13.3"
@@ -288,5 +289,8 @@ resource "null_resource" "db_setup" {
 }
 
 data "aws_db_instance" "rds-terraform-homework-1" {
-  db_instance_identifier = "rds-terraform-homework-1"
+  db_instance_identifier = "postgres"
+  depends_on = [
+    aws_db_instance.rds-terraform-homework-1
+  ]
 }
