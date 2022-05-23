@@ -1,25 +1,27 @@
 version: "3.9"
 services:
   postgres:
-    image: postgres:13.3
     container_name: postgres
     build: ./db
     volumes:
       - ./data:/var/lib/postgresql/data
-      - ./init-db:/docker-entrypoint-initdb.d
     restart: always
     ports:
       - "5432:5432"
     networks:
       - backend
-
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 3s
+      start_period: 5s
+      retries: 4
 
   python:
-    image: python:3.5
     container_name: python
     build: ./app
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - backend
 
