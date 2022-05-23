@@ -155,7 +155,9 @@ resource "aws_ecs_task_definition" "ecstd-terraform-homework-1" {
     "image": "762135247538.dkr.ecr.us-east-1.amazonaws.com/terraform-homework-1-python:v1",
     "cpu": 512,
     "memory": 1024,
-    "essential": true
+    "essential": true,
+    "environment": [
+      {"name": "PG_HOST", "value": "${data.aws_db_instance.rds-terraform-homework-1.endpoint}"}
   }
 ]
 TASK_DEFINITION
@@ -231,8 +233,8 @@ resource "aws_security_group" "ecs-sec-gr-terraform-homework-1" {
 
 #Create RDS postgres(rds) 
 resource "aws_db_instance" "rds-terraform-homework-1" {
-  name                    = "rds_terraform_homework_1"
-  identifier              = "postgres"
+  name                    = "rds-terraform-homework-1"
+  #identifier              = "postgres"
   engine                  = "postgres"
   allocated_storage       = 20
   engine_version          = "13.3"
@@ -273,18 +275,18 @@ resource "aws_security_group" "rds-sec-gr-terraform-homework-1" {
   }
 }
 
-
-
-/*
-#
-data "local_file" "sql_script" {
-  filename = "${path.module}/init/db_structure.sql"
+#Add SQL query - create table "users"
+data "local_file" "create_table_users" {
+  filename = "./create_table_users.sql"
 }
 
 resource "null_resource" "db_setup" {
-  depends_on = [module.db, aws_security_group.rds_main, aws_default_security_group.default]
+  depends_on = [aws_db_instance.rds-terraform-homework-1, aws_security_group.ecs-sec-gr-terraform-homework-1, aws_security_group.rds-sec-gr-terraform-homework-1]
   provisioner "local-exec" {
-    command = "mysql --host=${module.db.this_db_instance_address} --port=${var.dbport} --user=${var.dbusername} --password=${var.dbpassword} --database=${var.dbname} < ${data.local_file.sql_script.content}"
+    command = "psql --host=${data.aws_db_instance.rds-terraform-homework-1.endpoint} --port=5432 --user=${var.rds-username} --password=${var.rds-password} --database=${data.aws_db_instance.rds-terraform-homework-1.db_name} < ${data.local_file.create_table_users.content}"
   }
 }
-*/
+
+data "aws_db_instance" "rds-terraform-homework-1" {
+  db_instance_identifier = "rds-terraform-homework-1"
+}
