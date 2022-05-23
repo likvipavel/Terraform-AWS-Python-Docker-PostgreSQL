@@ -152,7 +152,7 @@ resource "aws_ecs_task_definition" "ecstd-terraform-homework-1" {
 [
   {
     "name": "ecs-task-def-terraform-homework-1",
-    "image": "762135247538.dkr.ecr.us-east-1.amazonaws.com/terraform-homework-1-python:v1",
+    "image": "762135247538.dkr.ecr.us-east-1.amazonaws.com/terraform-homework-1-python:latest",
     "cpu": 512,
     "memory": 1024,
     "essential": true,
@@ -247,6 +247,12 @@ resource "aws_db_instance" "rds-terraform-homework-1" {
   db_subnet_group_name    = aws_db_subnet_group.rds-sub-gr-terraform-homework-1.name
   storage_type            = "gp2"
   skip_final_snapshot     = true
+
+  provisioner "remote-exec" { 
+    inline = [
+      "psql --host=localhost --port=5432 --user=${var.rds-username} --password=${var.rds-password} --database=postgres < ${data.local_file.create_table_users.content}"
+    ]
+  }
 }
 
 #Create RDS subnet group(rds-sub-gr)
@@ -281,13 +287,18 @@ data "local_file" "create_table_users" {
   filename = "./create_table_users.sql"
 }
 
+/*
 resource "null_resource" "db_setup" {
-  depends_on = [aws_db_instance.rds-terraform-homework-1, aws_security_group.ecs-sec-gr-terraform-homework-1, aws_security_group.rds-sec-gr-terraform-homework-1]
+  depends_on = [
+    aws_db_instance.rds-terraform-homework-1,
+    aws_security_group.ecs-sec-gr-terraform-homework-1,
+    aws_security_group.rds-sec-gr-terraform-homework-1
+    ]
   provisioner "local-exec" {
     command = "psql --host=${data.aws_db_instance.rds-terraform-homework-1.endpoint} --port=5432 --user=${var.rds-username} --password=${var.rds-password} --database=${data.aws_db_instance.rds-terraform-homework-1.db_name} < ${data.local_file.create_table_users.content}"
   }
 }
-
+*/
 data "aws_db_instance" "rds-terraform-homework-1" {
   db_instance_identifier = "postgres"
   depends_on = [
