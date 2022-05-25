@@ -9,7 +9,7 @@ terraform {
 }
 
 provider "aws" {
-  region = "us-east-1"
+  region = var.aws-region
 }
 
 #Create new VPC(vpc)
@@ -24,6 +24,7 @@ resource "aws_vpc" "vpc-terraform-homework-1" {
 #Create Internet Gateway(igw) and attach it to the VPC
 resource "aws_internet_gateway" "igw-terraform-homework-1" {
   vpc_id = aws_vpc.vpc-terraform-homework-1.id
+  
   tags = {
     Name = "igw-terraform-homework-1"
   }
@@ -77,6 +78,11 @@ resource "aws_subnet" "subnet-private-b-terraform-homework-1" {
 resource "aws_route_table" "rt-public-terraform-homework-1" {
   vpc_id = aws_vpc.vpc-terraform-homework-1.id
 
+  route {
+    cidr_block = "0.0.0.0/0"   #to internet
+    gateway_id = aws_internet_gateway.igw-terraform-homework-1.id
+  }
+
   tags = {
     Name = "rt-public-terraform-homework-1"
   }
@@ -89,15 +95,18 @@ resource "aws_route_table" "rt-private-terraform-homework-1" {
     Name = "rt-private-terraform-homework-1"
   }
 }
-
+/*
 #Add route(r) for publuc route table 
 resource "aws_route" "r-public-terraform-homework-1" {
   route_table_id         = aws_route_table.rt-public-terraform-homework-1.id
   gateway_id             = aws_internet_gateway.igw-terraform-homework-1.id
-  destination_cidr_block = "0.0.0.0/0"
+  destination_cidr_block = list[
+    "10.6.0.0/16",              #route inside vpc
+    "0.0.0.0/0"                 #route to internet
+  ]
 }
 
-#Create private NAT gateway(nat) 
+#Create private NAT gateway(nat)
 resource "aws_nat_gateway" "nat-private-terraform-homework-1" {
   connectivity_type = "private"
   subnet_id         = aws_subnet.subnet-public-a-terraform-homework-1.id
@@ -107,13 +116,14 @@ resource "aws_nat_gateway" "nat-private-terraform-homework-1" {
   }
 }
 
+
 #Add route(r) for private route table 
 resource "aws_route" "r-private-terraform-homework-1" {
   route_table_id         = aws_route_table.rt-private-terraform-homework-1.id
   nat_gateway_id         = aws_nat_gateway.nat-private-terraform-homework-1.id
-  destination_cidr_block = "0.0.0.0/0"
+  destination_cidr_block = "10.6.0.0/16"      #route inside vpc
 }
-
+*/
 #Provides a resource(rta) to create an association between the route tables and the subnets
 resource "aws_route_table_association" "rta-public-a-terraform-homework-1" {
   route_table_id = aws_route_table.rt-public-terraform-homework-1.id
@@ -135,6 +145,59 @@ resource "aws_route_table_association" "rta-private-b-terraform-homework-1" {
   subnet_id      = aws_subnet.subnet-private-b-terraform-homework-1.id
 }
 
+###TEMPERARY####FOR TEST
+# Create security groups for public subnets
+resource "aws_security_group" "sec-gr-public-terraform-homework-1" {
+  name        = "sec-gr-public-terraform-homework-1"
+  description = "Allow access from the SSH only"
+  vpc_id      = aws_vpc.vpc-terraform-homework-1.id
+
+  ingress {
+    description = "from public apse1"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "sec-gr-public-terraform-homework-1"
+  }
+}
+###TEMPERARY####FOR TEST
+# Create security groups for private subnets 
+resource "aws_security_group" "sec-gr-private-terraform-homework-1" {
+  name        = "sec-gr-private-terraform-homework-1"
+  description = "Allow access from the SSH only"
+  vpc_id      = aws_vpc.vpc-terraform-homework-1.id
+
+  ingress {
+    description = "from private apse1"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["10.6.0.0/16"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "sec-gr-private-terraform-homework-1"
+  }
+}
+
 #Create ECS cluster(ecsc)
 resource "aws_ecs_cluster" "ecsc-terraform-homework-1" {
   name = "ecsc-terraform-homework-1"
@@ -146,15 +209,18 @@ resource "aws_ecs_task_definition" "ecstd-terraform-homework-1" {
   execution_role_arn       = aws_iam_role.ecs-task-ex-r-terraform-homework-1.arn
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
-  cpu                      = 512
-  memory                   = 1024
+  cpu                      = 256
+  memory                   = 512
+  depends_on = [
+    aws_db_instance.rds-terraform-homework-1
+  ]
   container_definitions    = <<TASK_DEFINITION
 [
   {
     "name": "ecs-task-def-terraform-homework-1",
-    "image": "762135247538.dkr.ecr.us-east-1.amazonaws.com/terraform-homework-1-python:latest",
-    "cpu": 512,
-    "memory": 1024,
+    "image": "762135247538.dkr.ecr.us-east-1.amazonaws.com/terraform-homework-1-python:v2",
+    "cpu": 256,
+    "memory": 512,
     "essential": true,
     "environment": [
       {"name": "PG_HOST", "value": "${data.aws_db_instance.rds-terraform-homework-1.endpoint}"}
@@ -203,11 +269,15 @@ resource "aws_ecs_service" "ecs-svc-terraform-homework-1" {
   cluster         = aws_ecs_cluster.ecsc-terraform-homework-1.id
   task_definition = aws_ecs_task_definition.ecstd-terraform-homework-1.arn
   launch_type     = "FARGATE"
-  desired_count   = 2
+  desired_count   = 1
+  depends_on = [
+    aws_instance.bastion
+  ]
 
   network_configuration {
     subnets          = [aws_subnet.subnet-public-a-terraform-homework-1.id, aws_subnet.subnet-public-b-terraform-homework-1.id]
     assign_public_ip = true
+    security_groups  = [aws_security_group.ecs-sec-gr-terraform-homework-1.id, aws_security_group.rds-sec-gr-terraform-homework-1.id, aws_security_group.sec-gr-public-terraform-homework-1.id]
   }
 }
 
@@ -218,8 +288,8 @@ resource "aws_security_group" "ecs-sec-gr-terraform-homework-1" {
   vpc_id      = aws_vpc.vpc-terraform-homework-1.id
 
   ingress {
-    from_port   = 22
-    to_port     = 22
+    from_port   = 80
+    to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -229,6 +299,10 @@ resource "aws_security_group" "ecs-sec-gr-terraform-homework-1" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+  
+  tags = {
+    Name = "sec-gr-private-terraform-homework-1"
   }
 }
 
@@ -247,12 +321,6 @@ resource "aws_db_instance" "rds-terraform-homework-1" {
   db_subnet_group_name    = aws_db_subnet_group.rds-sub-gr-terraform-homework-1.name
   storage_type            = "gp2"
   skip_final_snapshot     = true
-
-  provisioner "remote-exec" { 
-    inline = [
-      "psql --host=localhost --port=5432 --user=${var.rds-username} --password=${var.rds-password} --database=postgres < ${data.local_file.create_table_users.content}"
-    ]
-  }
 }
 
 #Create RDS subnet group(rds-sub-gr)
@@ -273,6 +341,13 @@ resource "aws_security_group" "rds-sec-gr-terraform-homework-1" {
     to_port         = "5432"
     security_groups = [aws_security_group.ecs-sec-gr-terraform-homework-1.id]
   }
+  
+  ingress {
+    protocol        = "tcp"
+    from_port       = "5432"
+    to_port         = "5432"
+    security_groups = [aws_security_group.sec-gr-public-terraform-homework-1.id]
+  }
 
   egress {
     protocol    = "-1"
@@ -281,13 +356,13 @@ resource "aws_security_group" "rds-sec-gr-terraform-homework-1" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
-
+/*
 #Add SQL query - create table "users"
 data "local_file" "create_table_users" {
   filename = "./create_table_users.sql"
 }
 
-/*
+
 resource "null_resource" "db_setup" {
   depends_on = [
     aws_db_instance.rds-terraform-homework-1,
@@ -305,3 +380,41 @@ data "aws_db_instance" "rds-terraform-homework-1" {
     aws_db_instance.rds-terraform-homework-1
   ]
 }
+
+resource "aws_instance" "bastion" {
+ami = "ami-0022f774911c1d690"
+instance_type = "t2.micro"
+vpc_security_group_ids = [aws_security_group.rds-sec-gr-terraform-homework-1.id, aws_security_group.sec-gr-public-terraform-homework-1.id ]
+subnet_id = aws_subnet.subnet-public-a-terraform-homework-1.id
+depends_on = [aws_db_instance.rds-terraform-homework-1]
+user_data = <<EOF
+#!/bin/bash
+export PGPASSWORD="${var.rds-password}" 
+sudo yum install -y postgresql
+echo 'CREATE TABLE IF NOT EXISTS users(email character varying(30),first_name character varying(30),last_name character varying(30),id serial primary key);' > query.sql
+psql -h "${data.aws_db_instance.rds-terraform-homework-1.endpoint}"} -U postgres < query.sql
+EOF
+} 
+
+/*
+resource "aws_instance" "bastion" {
+ami = "ami-0022f774911c1d690"
+instance_type = "t2.micro"
+vpc_security_group_ids = [aws_security_group.rds-sec-gr-terraform-homework-1.id, aws_security_group.sec-gr-public-terraform-hom
+ework-1.id ]
+subnet_id = aws_subnet.subnet-public-a-terraform-homework-1.id
+key_name = aws_key_pair.generated-key.key_name
+user_data     = "export PGPASSWORD=12345678"
+depends_on = [aws_db_instance.rds-terraform-homework-1]
+
+provisioner "remote-exec" {
+inline = [
+"sudo yum install -y postgresql",
+"export PGPASSWORD=12345678",
+"echo 'CREATE TABLE IF NOT EXISTS users(email character varying(30),first_name character varying(30),last_name character vary
+ing(30),id serial primary key);' > query.sql",
+"psql -h postgres.c4deejvx4ei1.us-east-1.rds.amazonaws.com -U postgres < query.sql"
+]
+}
+*/
+
