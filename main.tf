@@ -95,35 +95,7 @@ resource "aws_route_table" "rt-private-terraform-homework-1" {
     Name = "rt-private-terraform-homework-1"
   }
 }
-/*
-#Add route(r) for publuc route table 
-resource "aws_route" "r-public-terraform-homework-1" {
-  route_table_id         = aws_route_table.rt-public-terraform-homework-1.id
-  gateway_id             = aws_internet_gateway.igw-terraform-homework-1.id
-  destination_cidr_block = list[
-    "10.6.0.0/16",              #route inside vpc
-    "0.0.0.0/0"                 #route to internet
-  ]
-}
 
-#Create private NAT gateway(nat)
-resource "aws_nat_gateway" "nat-private-terraform-homework-1" {
-  connectivity_type = "private"
-  subnet_id         = aws_subnet.subnet-public-a-terraform-homework-1.id
-
-  tags = {
-    Name = "nat-private-terraform-homework-1"
-  }
-}
-
-
-#Add route(r) for private route table 
-resource "aws_route" "r-private-terraform-homework-1" {
-  route_table_id         = aws_route_table.rt-private-terraform-homework-1.id
-  nat_gateway_id         = aws_nat_gateway.nat-private-terraform-homework-1.id
-  destination_cidr_block = "10.6.0.0/16"      #route inside vpc
-}
-*/
 #Provides a resource(rta) to create an association between the route tables and the subnets
 resource "aws_route_table_association" "rta-public-a-terraform-homework-1" {
   route_table_id = aws_route_table.rt-public-terraform-homework-1.id
@@ -145,7 +117,6 @@ resource "aws_route_table_association" "rta-private-b-terraform-homework-1" {
   subnet_id      = aws_subnet.subnet-private-b-terraform-homework-1.id
 }
 
-###TEMPERARY####FOR TEST
 # Create security groups for public subnets
 resource "aws_security_group" "sec-gr-public-terraform-homework-1" {
   name        = "sec-gr-public-terraform-homework-1"
@@ -153,7 +124,6 @@ resource "aws_security_group" "sec-gr-public-terraform-homework-1" {
   vpc_id      = aws_vpc.vpc-terraform-homework-1.id
 
   ingress {
-    description = "from public apse1"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
@@ -169,32 +139,6 @@ resource "aws_security_group" "sec-gr-public-terraform-homework-1" {
 
   tags = {
     Name = "sec-gr-public-terraform-homework-1"
-  }
-}
-###TEMPERARY####FOR TEST
-# Create security groups for private subnets 
-resource "aws_security_group" "sec-gr-private-terraform-homework-1" {
-  name        = "sec-gr-private-terraform-homework-1"
-  description = "Allow access from the SSH only"
-  vpc_id      = aws_vpc.vpc-terraform-homework-1.id
-
-  ingress {
-    description = "from private apse1"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["10.6.0.0/16"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "sec-gr-private-terraform-homework-1"
   }
 }
 
@@ -223,18 +167,16 @@ resource "aws_ecs_task_definition" "ecstd-terraform-homework-1" {
     "memory": 512,
     "essential": true,
     "environment": [
-      {"name": "PG_HOST", "value": "${data.aws_db_instance.rds-terraform-homework-1.endpoint}"}
+      {"name": "PG_HOST", "value": "${data.aws_db_instance.rds-terraform-homework-1.address}"}
     ]
   }
 ]
 TASK_DEFINITION
-
   runtime_platform {
     operating_system_family = "LINUX"
     cpu_architecture        = "X86_64"
   }
 }
-
 
 #Create IAM task execution role(ecs-task-ex-r)
 resource "aws_iam_role" "ecs-task-ex-r-terraform-homework-1" {
@@ -270,9 +212,7 @@ resource "aws_ecs_service" "ecs-svc-terraform-homework-1" {
   task_definition = aws_ecs_task_definition.ecstd-terraform-homework-1.arn
   launch_type     = "FARGATE"
   desired_count   = 1
-  depends_on = [
-    aws_instance.bastion
-  ]
+  depends_on = [aws_instance.bastion]
 
   network_configuration {
     subnets          = [aws_subnet.subnet-public-a-terraform-homework-1.id, aws_subnet.subnet-public-b-terraform-homework-1.id]
@@ -356,24 +296,7 @@ resource "aws_security_group" "rds-sec-gr-terraform-homework-1" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
-/*
-#Add SQL query - create table "users"
-data "local_file" "create_table_users" {
-  filename = "./create_table_users.sql"
-}
 
-
-resource "null_resource" "db_setup" {
-  depends_on = [
-    aws_db_instance.rds-terraform-homework-1,
-    aws_security_group.ecs-sec-gr-terraform-homework-1,
-    aws_security_group.rds-sec-gr-terraform-homework-1
-    ]
-  provisioner "local-exec" {
-    command = "psql --host=${data.aws_db_instance.rds-terraform-homework-1.endpoint} --port=5432 --user=${var.rds-username} --password=${var.rds-password} --database=${data.aws_db_instance.rds-terraform-homework-1.db_name} < ${data.local_file.create_table_users.content}"
-  }
-}
-*/
 data "aws_db_instance" "rds-terraform-homework-1" {
   db_instance_identifier = "postgres"
   depends_on = [
@@ -381,40 +304,32 @@ data "aws_db_instance" "rds-terraform-homework-1" {
   ]
 }
 
+#Create the Bastion instance for insecting the table and success checking
 resource "aws_instance" "bastion" {
 ami = "ami-0022f774911c1d690"
 instance_type = "t2.micro"
 vpc_security_group_ids = [aws_security_group.rds-sec-gr-terraform-homework-1.id, aws_security_group.sec-gr-public-terraform-homework-1.id ]
 subnet_id = aws_subnet.subnet-public-a-terraform-homework-1.id
 depends_on = [aws_db_instance.rds-terraform-homework-1]
+key_name = "${aws_key_pair.generated-key.key_name}"
 user_data = <<EOF
 #!/bin/bash
-export PGPASSWORD="${var.rds-password}" 
-sudo yum install -y postgresql
-echo 'CREATE TABLE IF NOT EXISTS users(email character varying(30),first_name character varying(30),last_name character varying(30),id serial primary key);' > query.sql
-psql -h "${data.aws_db_instance.rds-terraform-homework-1.endpoint}"} -U postgres < query.sql
+export PGPASSWORD="${var.rds-password}"
+yum install -y postgresql
+echo 'CREATE TABLE IF NOT EXISTS users(email character varying(30),first_name character varying(30),last_name character varying(30),id serial primary key);' > /query.sql
+psql -h "${data.aws_db_instance.rds-terraform-homework-1.address}" -U postgres < /query.sql
 EOF
 } 
 
-/*
-resource "aws_instance" "bastion" {
-ami = "ami-0022f774911c1d690"
-instance_type = "t2.micro"
-vpc_security_group_ids = [aws_security_group.rds-sec-gr-terraform-homework-1.id, aws_security_group.sec-gr-public-terraform-hom
-ework-1.id ]
-subnet_id = aws_subnet.subnet-public-a-terraform-homework-1.id
-key_name = aws_key_pair.generated-key.key_name
-user_data     = "export PGPASSWORD=12345678"
-depends_on = [aws_db_instance.rds-terraform-homework-1]
-
-provisioner "remote-exec" {
-inline = [
-"sudo yum install -y postgresql",
-"export PGPASSWORD=12345678",
-"echo 'CREATE TABLE IF NOT EXISTS users(email character varying(30),first_name character varying(30),last_name character vary
-ing(30),id serial primary key);' > query.sql",
-"psql -h postgres.c4deejvx4ei1.us-east-1.rds.amazonaws.com -U postgres < query.sql"
-]
+resource "tls_private_key" "bastion-key" {
+  algorithm = "RSA"
+  rsa_bits = 4096
 }
-*/
+ 
+resource "aws_key_pair" "generated-key" {
+  public_key = tls_private_key.bastion-key.public_key_openssh
+}
 
+output "rdb" {
+  value = data.aws_db_instance.rds-terraform-homework-1.address
+}
