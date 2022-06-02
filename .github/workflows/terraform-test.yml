@@ -10,5 +10,13 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: Terraform format check
-        uses: hashicorp/terraform-github-actions/fmt@v1
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.2.2
+      - name: Terraform fmt
+        run: terraform fmt -check
+      - name: Successs message
+        run: echo "Terraform test success!"
