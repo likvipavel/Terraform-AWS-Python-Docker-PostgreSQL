@@ -1,0 +1,14 @@
+name: terraform-test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Terraform format check
+        uses: hashicorp/terraform-github-actions/fmt@v1
