@@ -36,14 +36,14 @@ jobs:
     defaults:
         run:
           working-directory: app/python-postgres-user-registration/
+    
     strategy:
       max-parallel: 4
       matrix:
         python-version: [3.7, 3.8, 3.9]
     
-   
     steps:
-    - name: Copy repo
+    - name: Copy Repo
       uses: actions/checkout@v3
     
     - name: Set up Python ${{ matrix.python-version }}
@@ -56,7 +56,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
             
-    - name: Create table
+    - name: Create Table
       run: psql -U postgres -h localhost    < ../../create_table_users.sql
       env:
         POSTGRES_HOST: ${{ env.POSTGRES_HOST }}
@@ -67,4 +67,37 @@ jobs:
         python app.py test
       env:
         PG_HOST: ${{ env.POSTGRES_HOST }}
-
+  deploy-to-aws_ecr:
+    runs-on: ubuntu-latest
+    
+    needs: [app-test]
+    
+    defaults:
+        run:
+          working-directory: app/python-postgres-user-registration/
+    steps:
+      - name: Copy Repo
+        uses: actions/checkout@v3
+      
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+      
+      - name: Build, tag, and push image to Amazon ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: terraform-homework-1-python
+          IMAGE_TAG: latest
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ../
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+      
+#     - name: Upload Image to ECR
+#       uses: appleboy/docker-ecr-action@master
+#       with:
+#         access_key: ${{ secrets.MY_AWS_ACCESS_KEY }}
+#         secret_key: ${{ secrets.MY_AWS_SECRET_ACCESS_KEY }}
+#         repo: terraform-homework-1-python
+#         registry: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
+#     - name: Success Message
+#       run :  echo Deploy to AWS ECR success:)
