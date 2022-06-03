@@ -40,7 +40,7 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        python-version: [3.7, 3.8, 3.9]
+        python-version: [3.5, 3.7, 3.9]
     
     steps:
     - name: Copy Repo
@@ -96,7 +96,7 @@ jobs:
           ECR_REPOSITORY: terraform-homework-1-python
           IMAGE_TAG: latest
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ../
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
       
 #     - name: Upload Image to ECR
