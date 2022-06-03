@@ -162,7 +162,7 @@ resource "aws_ecs_task_definition" "ecstd-terraform-homework-1" {
 [
   {
     "name": "ecs-task-def-terraform-homework-1",
-    "image": "762135247538.dkr.ecr.us-east-1.amazonaws.com/terraform-homework-1-python:latest",
+    "image": "762135247538.dkr.ecr.us-east-1.amazonaws.com/terraform-homework-1-python:v2",
     "cpu": 256,
     "memory": 512,
     "essential": true,
