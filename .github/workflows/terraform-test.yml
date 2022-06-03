@@ -20,14 +20,17 @@ jobs:
     steps:
       - name: Copy Repo
         uses: actions/checkout@v3
-        
+      
+      - run: ls -a
+      
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
         with:
           terraform_version: ${{ matrix.terraform-version }}
           
-      - name: Terraform Reformat 
-        run: terraform fmt -check
+      - name: Terraform Format
+        id: fmt
+        run: terraform fmt -check 
         continue-on-error: true
       
       - name: Terraform Init
