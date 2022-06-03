@@ -7,23 +7,26 @@ on:
       - 'app/python-postgres-user-registration/**'
   pull_request:
     branches: [ main ]
-    
+    paths: 
+      - 'app/python-postgres-user-registration/**'
 
 jobs:
-  test:
-    
+  app-test:
     runs-on: ubuntu-latest
     
+    env:
+      POSTGRES_USER    : postgres
+      POSTGRES_PASSWORD: 12345678
+      POSTGRES_HOST    : localhost
+      
     services:
       postgres:
-        image: postgres:latest
-        env:
-          POSTGRES_DB: postgres        
-          POSTGRES_PASSWORD: 12345678
-          POSTGRES_USER: postgres
+        image: postgres:9.5
+        env:       
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_USER    : ${{ env.POSTGRES_USER }}
         ports:
           - 5432:5432
-        # Set health checks to wait until postgres has started
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -56,12 +59,12 @@ jobs:
     - name: Create table
       run: psql -U postgres -h localhost    < ../../create_table_users.sql
       env:
-        POSTGRES_HOST: localhost
-        PGPASSWORD: 12345678
-        POSTGRES_USER: postgres
+        POSTGRES_HOST: ${{ env.POSTGRES_HOST }}
+        PGPASSWORD   : ${{ env.POSTGRES_PASSWORD }}
+        POSTGRES_USER: ${{ env.POSTGRES_USER }}
     - name: Run Tests
       run: |
         python app.py test
       env:
-        PG_HOST: localhost
-        
+        PG_HOST: ${{ env.POSTGRES_HOST }}
+
