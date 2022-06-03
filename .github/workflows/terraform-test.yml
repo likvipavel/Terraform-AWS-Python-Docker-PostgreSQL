@@ -3,9 +3,6 @@ name: terraform-test
 on:
   push:
     branches: [ main ]
-    paths: 
-      - 'main.tf'
-      - 'variables.tf'
   pull_request:
     branches: [ main ]
 
@@ -20,8 +17,6 @@ jobs:
     steps:
       - name: Copy Repo
         uses: actions/checkout@v3
-      
-      - run: ls -a
       
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
