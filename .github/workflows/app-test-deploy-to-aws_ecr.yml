@@ -99,12 +99,5 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
       
-#     - name: Upload Image to ECR
-#       uses: appleboy/docker-ecr-action@master
-#       with:
-#         access_key: ${{ secrets.MY_AWS_ACCESS_KEY }}
-#         secret_key: ${{ secrets.MY_AWS_SECRET_ACCESS_KEY }}
-#         repo: terraform-homework-1-python
-#         registry: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
-#     - name: Success Message
-#       run :  echo Deploy to AWS ECR success:)
+      - name: Success Message
+        run :  echo Deploy to AWS ECR success:)
