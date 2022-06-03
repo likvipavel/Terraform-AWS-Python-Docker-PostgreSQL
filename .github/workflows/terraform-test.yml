@@ -3,6 +3,9 @@ name: terraform-test
 on:
   push:
     branches: [ main ]
+    paths: 
+      - 'main.tf'
+      - 'variavles.tf'
   pull_request:
     branches: [ main ]
 
