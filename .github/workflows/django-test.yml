@@ -10,7 +10,7 @@ on:
     
 
 jobs:
-  build:
+  test:
     
     runs-on: ubuntu-latest
     
@@ -19,7 +19,7 @@ jobs:
         image: postgres:latest
         env:
           POSTGRES_DB: postgres        
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_PASSWORD: 12345678
           POSTGRES_USER: postgres
         ports:
           - 5432:5432
@@ -54,11 +54,14 @@ jobs:
         pip install -r requirements.txt
             
     - name: Create table
-      run: psql  -U postgres < ../../create_table_users.sql
+      run: psql -U postgres -h localhost    < ../../create_table_users.sql
       env:
-        POSTGRES_HOST: postgres
-        POSTGRES_PORT: 5432
+        POSTGRES_HOST: localhost
+        PGPASSWORD: 12345678
+        POSTGRES_USER: postgres
     - name: Run Tests
       run: |
         python app.py test
+      env:
+        PG_HOST: localhost
         
