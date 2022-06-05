@@ -1,4 +1,9 @@
 terraform {
+  backend "s3" {
+    bucket = "terraform-homework-1"
+    key    = "terraform.tfstate"
+    region = "us-east-1"
+  }
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -24,7 +29,7 @@ resource "aws_vpc" "vpc-terraform-homework-1" {
 #Create Internet Gateway(igw) and attach it to the VPC
 resource "aws_internet_gateway" "igw-terraform-homework-1" {
   vpc_id = aws_vpc.vpc-terraform-homework-1.id
-  
+
   tags = {
     Name = "igw-terraform-homework-1"
   }
@@ -79,7 +84,7 @@ resource "aws_route_table" "rt-public-terraform-homework-1" {
   vpc_id = aws_vpc.vpc-terraform-homework-1.id
 
   route {
-    cidr_block = "0.0.0.0/0"   #to internet
+    cidr_block = "0.0.0.0/0" #to internet
     gateway_id = aws_internet_gateway.igw-terraform-homework-1.id
   }
 
@@ -158,11 +163,11 @@ resource "aws_ecs_task_definition" "ecstd-terraform-homework-1" {
   depends_on = [
     aws_db_instance.rds-terraform-homework-1
   ]
-  container_definitions    = <<TASK_DEFINITION
+  container_definitions = <<TASK_DEFINITION
 [
   {
     "name": "ecs-task-def-terraform-homework-1",
-    "image": "762135247538.dkr.ecr.us-east-1.amazonaws.com/terraform-homework-1-python:v2",
+    "image": "762135247538.dkr.ecr.us-east-1.amazonaws.com/terraform-homework-1-python:latest",
     "cpu": 256,
     "memory": 512,
     "essential": true,
@@ -212,7 +217,7 @@ resource "aws_ecs_service" "ecs-svc-terraform-homework-1" {
   task_definition = aws_ecs_task_definition.ecstd-terraform-homework-1.arn
   launch_type     = "FARGATE"
   desired_count   = 1
-  depends_on = [aws_instance.bastion]
+  depends_on      = [aws_instance.bastion]
 
   network_configuration {
     subnets          = [aws_subnet.subnet-public-a-terraform-homework-1.id, aws_subnet.subnet-public-b-terraform-homework-1.id]
@@ -240,7 +245,7 @@ resource "aws_security_group" "ecs-sec-gr-terraform-homework-1" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  
+
   tags = {
     Name = "sec-gr-private-terraform-homework-1"
   }
@@ -248,19 +253,19 @@ resource "aws_security_group" "ecs-sec-gr-terraform-homework-1" {
 
 #Create RDS postgres(rds) 
 resource "aws_db_instance" "rds-terraform-homework-1" {
-  name                    = "postgres"
-  identifier              = "postgres"
-  engine                  = "postgres"
-  allocated_storage       = 20
-  engine_version          = "13.3"
-  port                    = "5432"
-  username                = var.rds-username
-  password                = var.rds-password
-  instance_class          = var.rds-instance-class
-  vpc_security_group_ids  = [aws_security_group.rds-sec-gr-terraform-homework-1.id]
-  db_subnet_group_name    = aws_db_subnet_group.rds-sub-gr-terraform-homework-1.name
-  storage_type            = "gp2"
-  skip_final_snapshot     = true
+  name                   = "postgres"
+  identifier             = "postgres"
+  engine                 = "postgres"
+  allocated_storage      = 20
+  engine_version         = "13.3"
+  port                   = "5432"
+  username               = var.rds-username
+  password               = var.rds-password
+  instance_class         = var.rds-instance-class
+  vpc_security_group_ids = [aws_security_group.rds-sec-gr-terraform-homework-1.id]
+  db_subnet_group_name   = aws_db_subnet_group.rds-sub-gr-terraform-homework-1.name
+  storage_type           = "gp2"
+  skip_final_snapshot    = true
 }
 
 #Create RDS subnet group(rds-sub-gr)
@@ -281,7 +286,7 @@ resource "aws_security_group" "rds-sec-gr-terraform-homework-1" {
     to_port         = "5432"
     security_groups = [aws_security_group.ecs-sec-gr-terraform-homework-1.id]
   }
-  
+
   ingress {
     protocol        = "tcp"
     from_port       = "5432"
@@ -306,26 +311,26 @@ data "aws_db_instance" "rds-terraform-homework-1" {
 
 #Create the Bastion instance for insecting the table and success checking
 resource "aws_instance" "bastion" {
-ami = "ami-0022f774911c1d690"
-instance_type = "t2.micro"
-vpc_security_group_ids = [aws_security_group.rds-sec-gr-terraform-homework-1.id, aws_security_group.sec-gr-public-terraform-homework-1.id ]
-subnet_id = aws_subnet.subnet-public-a-terraform-homework-1.id
-depends_on = [aws_db_instance.rds-terraform-homework-1]
-key_name = "${aws_key_pair.generated-key.key_name}"
-user_data = <<EOF
+  ami                    = "ami-0022f774911c1d690"
+  instance_type          = "t2.micro"
+  vpc_security_group_ids = [aws_security_group.rds-sec-gr-terraform-homework-1.id, aws_security_group.sec-gr-public-terraform-homework-1.id]
+  subnet_id              = aws_subnet.subnet-public-a-terraform-homework-1.id
+  depends_on             = [aws_db_instance.rds-terraform-homework-1]
+  key_name               = aws_key_pair.generated-key.key_name
+  user_data              = <<EOF
 #!/bin/bash
 export PGPASSWORD="${var.rds-password}"
 yum install -y postgresql
 echo 'CREATE TABLE IF NOT EXISTS users(email character varying(30),first_name character varying(30),last_name character varying(30),id serial primary key);' > /query.sql
 psql -h "${data.aws_db_instance.rds-terraform-homework-1.address}" -U postgres < /query.sql
 EOF
-} 
+}
 
 resource "tls_private_key" "bastion-key" {
   algorithm = "RSA"
-  rsa_bits = 4096
+  rsa_bits  = 4096
 }
- 
+
 resource "aws_key_pair" "generated-key" {
   public_key = tls_private_key.bastion-key.public_key_openssh
 }

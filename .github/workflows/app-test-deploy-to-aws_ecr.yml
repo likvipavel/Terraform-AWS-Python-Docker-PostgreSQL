@@ -100,4 +100,4 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
       
       - name: Success Message
-        run :  echo Deploy to AWS ECR success:)
+        run :  echo "Deploy to AWS ECR success:)"
