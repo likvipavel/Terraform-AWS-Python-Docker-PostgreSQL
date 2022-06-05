@@ -3,8 +3,12 @@ name: terraform-test
 on:
   push:
     branches: [ main ]
+    paths:
+    - '**.tf'
   pull_request:
     branches: [ main ]
+    paths:
+    - '**.tf'
 
 jobs:
   test:
