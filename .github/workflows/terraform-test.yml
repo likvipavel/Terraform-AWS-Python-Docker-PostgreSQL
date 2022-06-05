@@ -9,15 +9,11 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      max-parallel: 3
-      matrix:
-        terraform_version: [1.0.11, 1.2.2]
         
     steps:
       - name: Copy Repo
         uses: actions/checkout@v3
-        
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -28,11 +24,12 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
         with:
-          terraform_version: ${{ matrix.terraform-version }}
+          terraform_version: 1.2.2
 
       - name: Terraform Format
         id: fmt
         run: terraform fmt -check
+        continue-on-error: true
 
       - name: Terraform Init
         id: init
@@ -45,7 +42,7 @@ jobs:
       - name: Terraform Plan
         id: plan
         if: github.event_name == 'pull_request'
-        run: terraform plan -no-color -input=false
+        run: terraform plan -no-color
         continue-on-error: true
 
       - uses: actions/github-script@v6
@@ -77,7 +74,7 @@ jobs:
 
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: terraform apply -auto-approve -input=false
+        run: terraform apply -auto-approve
 
       - name: Successs Message
         run: echo "Terraform test success:)"
