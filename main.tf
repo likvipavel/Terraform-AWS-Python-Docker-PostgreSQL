@@ -1,7 +1,7 @@
 terraform {
   backend "s3" {
     bucket = "terraform-homework-1"
-    key = "global/s3/terraform.tfstate"
+    key = "terraform.tfstate"
     region = "us-east-1"
   }
   required_providers {
