@@ -17,6 +17,13 @@ jobs:
     steps:
       - name: Copy Repo
         uses: actions/checkout@v3
+        
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.MY_AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.MY_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
       
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
@@ -71,6 +78,6 @@ jobs:
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: terraform apply -auto-approve -input=false
-        
+
       - name: Successs Message
         run: echo "Terraform test success:)"
