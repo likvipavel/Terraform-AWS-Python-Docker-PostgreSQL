@@ -1,4 +1,9 @@
 terraform {
+  backend "s3" {
+    bucket = "terraform-homework-1"
+    key = "global/s3/terraform.tfstate"
+    region = "us-east-1"
+  }
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -299,20 +304,20 @@ resource "aws_security_group" "rds-sec-gr-terraform-homework-1" {
 
 data "aws_db_instance" "rds-terraform-homework-1" {
   db_instance_identifier = "postgres"
-  depends_on = [
+  depends_on             = [
     aws_db_instance.rds-terraform-homework-1
   ]
 }
 
 #Create the Bastion instance for insecting the table and success checking
 resource "aws_instance" "bastion" {
-ami = "ami-0022f774911c1d690"
-instance_type = "t2.micro"
+ami                    = "ami-0022f774911c1d690"
+instance_type          = "t2.micro"
 vpc_security_group_ids = [aws_security_group.rds-sec-gr-terraform-homework-1.id, aws_security_group.sec-gr-public-terraform-homework-1.id ]
-subnet_id = aws_subnet.subnet-public-a-terraform-homework-1.id
-depends_on = [aws_db_instance.rds-terraform-homework-1]
-key_name = "${aws_key_pair.generated-key.key_name}"
-user_data = <<EOF
+subnet_id              = aws_subnet.subnet-public-a-terraform-homework-1.id
+depends_on             = [aws_db_instance.rds-terraform-homework-1]
+key_name               = "${aws_key_pair.generated-key.key_name}"
+user_data              = <<EOF
 #!/bin/bash
 export PGPASSWORD="${var.rds-password}"
 yum install -y postgresql
@@ -323,7 +328,7 @@ EOF
 
 resource "tls_private_key" "bastion-key" {
   algorithm = "RSA"
-  rsa_bits = 4096
+  rsa_bits  = 4096
 }
  
 resource "aws_key_pair" "generated-key" {
