@@ -31,6 +31,10 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - uses: psf/black@stable
+    - name: Run Flake8
+      run: |
+        python -m pip install flake8
+        flake8      
     
   app-test:
     name: Python Test DB Connection 
