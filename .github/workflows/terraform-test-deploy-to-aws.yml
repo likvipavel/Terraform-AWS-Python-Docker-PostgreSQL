@@ -3,16 +3,16 @@ name: Terraform-CD
 on:
   push:
     branches: [ main ]
-    paths:
+    paths   :
     - '**.tf'
   pull_request:
     branches: [ main ]
-    paths:
+    paths   :
     - '**.tf'
   workflow_run:
     workflows: [Python-CI]
-    types:
-      - completed
+    types    :
+    - completed
 
 jobs:
   test:
@@ -35,27 +35,27 @@ jobs:
           terraform_version: 1.2.2
 
       - name: Terraform Format
-        id: fmt
-        run: terraform fmt -check
+        id  : fmt
+        run : terraform fmt -check
         continue-on-error: true
 
       - name: Terraform Init
-        id: init
-        run: terraform init
+        id  : init
+        run : terraform init
       
       - name: Terraform Validate
-        id: validate
-        run: terraform validate -no-color
+        id  : validate
+        run : terraform validate -no-color
 
       - name: Terraform Plan
-        id: plan
-        if: github.event_name == 'pull_request'
-        run: terraform plan -no-color
+        id  : plan
+        if  : github.event_name == 'pull_request'
+        run : terraform plan -no-color
         continue-on-error: true
 
       - uses: actions/github-script@v6
-        if: github.event_name == 'pull_request'
-        env:
+        if  : github.event_name == 'pull_request'
+        env :
           PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -77,16 +77,21 @@ jobs:
               body: output
             })
       - name: Terraform Plan Status
-        if: steps.plan.outcome == 'failure'
-        run: exit 1
+        if  : steps.plan.outcome == 'failure'
+        run : exit 1
         
       - name: Terraform Plan
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: terraform plan -no-color
+        if  : github.ref == 'refs/heads/main' && github.event_name == 'push' ||  ${{ github.event.workflow_run.conclusion == 'success' }}
+        run : terraform plan -no-color
 
       - name: Terraform Apply
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: terraform apply -auto-approve
+        if  : github.ref == 'refs/heads/main' && github.event_name == 'push' ||  ${{ github.event.workflow_run.conclusion == 'success' }}
+        run : terraform apply -auto-approve
 
       - name: Successs Message
-        run: echo "Terraform test success:)"
+        if  : github.event_name == 'push'
+        run : echo "Terraform-CD success:)"
+        
+      - name: Successs Message
+        if  : github.event_name == 'pull_request'
+        run : echo "Terraform test success:)"
