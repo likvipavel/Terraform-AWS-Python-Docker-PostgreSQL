@@ -15,8 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     
     env:
-      POSTGRES_USER    : postgres
-      POSTGRES_PASSWORD: 12345678
+      POSTGRES_USER    : ${{ secret.POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secret.POSTGRES_PASSWORD }}
       POSTGRES_HOST    : localhost
       
     services:
