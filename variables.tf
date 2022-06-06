@@ -9,4 +9,3 @@ variable "rds-instance-class" {
 variable "rds-username" {
   default = "postgres"
 }
-
