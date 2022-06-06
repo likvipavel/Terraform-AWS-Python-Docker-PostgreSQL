@@ -18,7 +18,7 @@ If you installed PostgreSQL via the EnterpriseDB installer, execute the followin
 export PATH=$PATH:/Library/PostgreSQL/9.5/bin
 ```
 
-Remember to substitute 9.5 for your PostgreSQL version.
+Remember to substitute 9.5 for your PostgreSQL version
 
 ```
 pip install --upgrade wheel
