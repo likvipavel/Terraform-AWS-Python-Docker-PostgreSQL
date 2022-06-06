@@ -9,10 +9,7 @@ on:
     branches: [ main ]
     paths   :
     - '**.tf'
-  workflow_run:
-    workflows: [Python-CI]
-    types    :
-    - completed
+
 
 jobs:
   test:
