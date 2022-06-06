@@ -37,7 +37,7 @@ jobs:
       - name: Terraform Format
         id  : fmt
         run : |
-          export TF_VAR_rds-password=${{ secrets.POSTGRES_PASSWORD }}
+          export TF_VAR_rds_password=${{ secrets.POSTGRES_PASSWORD }}
           terraform fmt -check
         continue-on-error: true
 
@@ -53,7 +53,7 @@ jobs:
         id  : plan
         if  : github.event_name == 'pull_request'
         run :  |
-          export TF_VAR_rds-password=${{ secrets.POSTGRES_PASSWORD }}
+          export TF_VAR_rds_password=${{ secrets.POSTGRES_PASSWORD }}
           terraform plan -no-color
         continue-on-error: true
 
@@ -87,7 +87,7 @@ jobs:
       - name: Terraform Plan
         if  : github.ref == 'refs/heads/main' && github.event_name == 'push' || github.event.workflow_run.conclusion == 'success'
         run :  |
-          export TF_VAR_rds-password=${{ secrets.POSTGRES_PASSWORD }}
+          export TF_VAR_rds_password=${{ secrets.POSTGRES_PASSWORD }}
           terraform plan -no-color
 
       - name: Terraform Apply
