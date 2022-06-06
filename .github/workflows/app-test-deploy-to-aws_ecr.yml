@@ -15,16 +15,16 @@ jobs:
     runs-on: ubuntu-latest
     
     env:
-      POSTGRES_USER    : ${{ secret.POSTGRES_USER }}
-      POSTGRES_PASSWORD: ${{ secret.POSTGRES_PASSWORD }}
+      POSTGRES_USER    : ${{ secrets.POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
       POSTGRES_HOST    : localhost
       
     services:
       postgres:
         image: postgres:9.5
         env:       
-          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
-          POSTGRES_USER    : ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_USER    : ${{ secrets.POSTGRES_USER }}
         ports:
           - 5432:5432
         options: >-
@@ -60,8 +60,8 @@ jobs:
       run: psql -U postgres -h localhost    < ../../create_table_users.sql
       env:
         POSTGRES_HOST: ${{ env.POSTGRES_HOST }}
-        PGPASSWORD   : ${{ env.POSTGRES_PASSWORD }}
-        POSTGRES_USER: ${{ env.POSTGRES_USER }}
+        PGPASSWORD   : ${{ secrets.POSTGRES_PASSWORD }}
+        POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
     - name: Run Tests
       run: |
         python app.py test
