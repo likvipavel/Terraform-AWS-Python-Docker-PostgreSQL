@@ -92,7 +92,9 @@ jobs:
 
       - name: Terraform Apply
         if  : github.ref == 'refs/heads/main' && github.event_name == 'push' || github.event.workflow_run.conclusion == 'success'
-        run : terraform apply -auto-approve
+        run : |
+          export TF_VAR_rds_password=${{ secrets.POSTGRES_PASSWORD }}
+          terraform apply -auto-approve
 
       - name: Successs Message
         if  : github.event_name == 'push' || github.event.workflow_run.conclusion == 'success'
