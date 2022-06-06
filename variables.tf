@@ -9,3 +9,9 @@ variable "rds-instance-class" {
 variable "rds-username" {
   default = "postgres"
 }
+
+variable "rds-password" {
+  description = "The password for the DB user"
+  type        = string
+  sensitive   = true
+}
