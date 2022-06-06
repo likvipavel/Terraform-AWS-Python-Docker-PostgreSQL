@@ -10,6 +10,3 @@ variable "rds-username" {
   default = "postgres"
 }
 
-variable "rds-password" {
-  default = "12345678"
-}
