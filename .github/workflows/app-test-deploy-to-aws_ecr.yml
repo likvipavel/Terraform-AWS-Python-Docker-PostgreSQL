@@ -67,8 +67,13 @@ jobs:
         python app.py test
       env:
         PG_HOST: ${{ env.POSTGRES_HOST }}
+        
+    - name: Success Message
+      run :  echo "App-test success:)"
+      
   deploy-to-aws_ecr:
     runs-on: ubuntu-latest
+    if: github.event_name == 'push'
     
     needs: [app-test]
     
