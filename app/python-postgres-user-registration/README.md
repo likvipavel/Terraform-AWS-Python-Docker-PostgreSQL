@@ -6,7 +6,7 @@ This repository is part of the course "The Complete Python/PostgreSQL Developer 
 
 To install PostgreSQL easily I would recommend using the installers from EnterpriseDB. The download page is here: https://www.postgresql.org/download/.
 
-## Installing psycopg2
+## Installing psycopg2.
 
 To install the psycopg2 library there are a few ways.
 
