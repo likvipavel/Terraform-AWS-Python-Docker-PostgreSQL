@@ -36,7 +36,9 @@ jobs:
 
       - name: Terraform Format
         id  : fmt
-        run : terraform fmt -check
+        run : |
+          export TF_VAR_rds-password=${{ secrets.POSTGRES_PASSWORD }}
+          terraform fmt -check
         continue-on-error: true
 
       - name: Terraform Init
@@ -89,7 +91,7 @@ jobs:
         run : terraform apply -auto-approve
 
       - name: Successs Message
-        if  : github.event_name == 'push'
+        if  : github.event_name == 'push' ||  ${{ github.event.workflow_run.conclusion == 'success'
         run : echo "Terraform-CD success:)"
         
       - name: Successs Message
