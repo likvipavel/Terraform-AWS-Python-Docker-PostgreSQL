@@ -83,15 +83,15 @@ jobs:
         run : exit 1
         
       - name: Terraform Plan
-        if  : github.ref == 'refs/heads/main' && github.event_name == 'push' ||  ${{ github.event.workflow_run.conclusion == 'success' }}
+        if  : github.ref == 'refs/heads/main' && github.event_name == 'push' || github.event.workflow_run.conclusion == 'success'
         run : terraform plan -no-color
 
       - name: Terraform Apply
-        if  : github.ref == 'refs/heads/main' && github.event_name == 'push' ||  ${{ github.event.workflow_run.conclusion == 'success' }}
+        if  : github.ref == 'refs/heads/main' && github.event_name == 'push' || github.event.workflow_run.conclusion == 'success'
         run : terraform apply -auto-approve
 
       - name: Successs Message
-        if  : github.event_name == 'push' ||  ${{ github.event.workflow_run.conclusion == 'success'
+        if  : github.event_name == 'push' || github.event.workflow_run.conclusion == 'success'
         run : echo "Terraform-CD success:)"
         
       - name: Successs Message
