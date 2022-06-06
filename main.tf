@@ -338,4 +338,3 @@ resource "aws_key_pair" "generated-key" {
 output "rdb" {
   value = data.aws_db_instance.rds-terraform-homework-1.address
 }
-
