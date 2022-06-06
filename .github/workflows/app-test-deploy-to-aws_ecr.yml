@@ -11,7 +11,29 @@ on:
       - 'app/python-postgres-user-registration/**'
 
 jobs:
+  lint:
+    name: Python Lint
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: app/python-postgres-user-registration/
+    
+    strategy:
+      max-parallel: 3
+      matrix:
+        python-version: [3.5, 3.7, 3.9]
+        
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - uses: psf/black@stable
+    
   app-test:
+    name: Python Test DB Connection 
     runs-on: ubuntu-latest
     
     env:
@@ -38,7 +60,7 @@ jobs:
           working-directory: app/python-postgres-user-registration/
     
     strategy:
-      max-parallel: 4
+      max-parallel: 3
       matrix:
         python-version: [3.5, 3.7, 3.9]
     
