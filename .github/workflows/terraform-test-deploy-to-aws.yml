@@ -52,7 +52,9 @@ jobs:
       - name: Terraform Plan
         id  : plan
         if  : github.event_name == 'pull_request'
-        run : terraform plan -no-color
+        run :  |
+          export TF_VAR_rds-password=${{ secrets.POSTGRES_PASSWORD }}
+          terraform plan -no-color
         continue-on-error: true
 
       - uses: actions/github-script@v6
@@ -84,7 +86,9 @@ jobs:
         
       - name: Terraform Plan
         if  : github.ref == 'refs/heads/main' && github.event_name == 'push' || github.event.workflow_run.conclusion == 'success'
-        run : terraform plan -no-color
+        run :  |
+          export TF_VAR_rds-password=${{ secrets.POSTGRES_PASSWORD }}
+          terraform plan -no-color
 
       - name: Terraform Apply
         if  : github.ref == 'refs/heads/main' && github.event_name == 'push' || github.event.workflow_run.conclusion == 'success'
