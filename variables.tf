@@ -10,7 +10,7 @@ variable "rds-username" {
   default = "postgres"
 }
 
-variable "rds-password" {
+variable "rds_password" {
   description = "The password for the DB user"
   type        = string
   sensitive   = true
