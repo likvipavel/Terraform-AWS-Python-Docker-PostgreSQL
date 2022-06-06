@@ -25,7 +25,9 @@ jobs:
         python-version: [3.5, 3.7, 3.9]
         
     steps:
-    - uses: actions/checkout@v2
+    - name: Copy Repo
+      uses: actions/checkout@v2
+    
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
@@ -34,7 +36,8 @@ jobs:
     - name: Run Flake8
       run: |
         python -m pip install flake8
-        flake8      
+        flake8   
+      continue-on-error: true
     
   app-test:
     name: Python Test DB Connection 
@@ -90,6 +93,7 @@ jobs:
         POSTGRES_HOST: ${{ env.POSTGRES_HOST }}
         PGPASSWORD   : ${{ secrets.POSTGRES_PASSWORD }}
         POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+        
     - name: Run Tests
       run: |
         python app.py test
