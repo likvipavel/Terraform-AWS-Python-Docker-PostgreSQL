@@ -260,7 +260,7 @@ resource "aws_db_instance" "rds-terraform-homework-1" {
   engine_version         = "13.3"
   port                   = "5432"
   username               = var.rds-username
-  password               = var.rds-password
+  password               = var.rds_password
   instance_class         = var.rds-instance-class
   vpc_security_group_ids = [aws_security_group.rds-sec-gr-terraform-homework-1.id]
   db_subnet_group_name   = aws_db_subnet_group.rds-sub-gr-terraform-homework-1.name
@@ -319,7 +319,7 @@ resource "aws_instance" "bastion" {
   key_name               = aws_key_pair.generated-key.key_name
   user_data              = <<EOF
 #!/bin/bash
-export PGPASSWORD="${var.rds-password}"
+export PGPASSWORD="${var.rds_password}"
 yum install -y postgresql
 echo 'CREATE TABLE IF NOT EXISTS users(email character varying(30),first_name character varying(30),last_name character varying(30),id serial primary key);' > /query.sql
 psql -h "${data.aws_db_instance.rds-terraform-homework-1.address}" -U postgres < /query.sql
