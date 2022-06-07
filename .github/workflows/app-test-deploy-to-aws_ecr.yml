@@ -38,7 +38,6 @@ jobs:
         pip install --upgrade pip
         python -m pip install flake8
         flake8   
-      continue-on-error: true
     
   app-test:
     name: Python Test DB Connection 
