@@ -21,6 +21,7 @@ class Database:
     def close_all_connections():
         Database.__connection_pool.closeall()
 
+
 class CursorFromConnectionPool:
     def __init__(self):
         self.conn = None
@@ -32,7 +33,7 @@ class CursorFromConnectionPool:
         return self.cursor
 
     def __exit__(self, exception_type, exception_value, exception_traceback):
-        if exception_value:  # This is equivalent to `if exception_value is not None`
+        if exception_value:
             self.conn.rollback()
         else:
             self.cursor.close()
