@@ -14,7 +14,7 @@ class User:
     def save_to_db(self):
         # This is creating a new connection pool every time! Very expensive...
         with CursorFromConnectionPool() as cursor:
-            cursor.execute('INSERT INTO users (email, first_name',
+            cursor.execute('INSERT INTO users (email, first_name', \
                            'last_name) VALUES (%s, %s, %s)',
                            (self.email, self.first_name, self.last_name))
 
