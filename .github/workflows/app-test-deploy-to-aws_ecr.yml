@@ -22,7 +22,7 @@ jobs:
     strategy:
       max-parallel: 3
       matrix:
-        python-version: [3.5, 3.7, 3.9]
+        python-version: [3.6, 3.7, 3.9]
         
     steps:
     - name: Copy Repo
@@ -72,7 +72,7 @@ jobs:
     strategy:
       max-parallel: 3
       matrix:
-        python-version: [3.5, 3.7, 3.9]
+        python-version: [3.6, 3.7, 3.9]
     
     steps:
     - name: Copy Repo

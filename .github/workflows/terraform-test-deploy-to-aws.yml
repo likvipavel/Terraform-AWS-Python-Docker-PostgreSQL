@@ -15,7 +15,7 @@ on:
 #    - completed
 
 jobs:
-  test:
+  test-and-deploy:
     runs-on: ubuntu-latest
         
     steps:
