@@ -229,7 +229,7 @@ resource "aws_ecs_service" "ecs-svc-terraform-homework-1" {
 ##Create ECS security group(ecs-sec-gr)
 resource "aws_security_group" "ecs-sec-gr-terraform-homework-1" {
   name        = "ecs-sec-gr-terraform-homework-1"
-  description = "Allow access from the SSH only"
+  description = "Allow access from HTTP"
   vpc_id      = aws_vpc.vpc-terraform-homework-1.id
 
   ingress {
@@ -277,7 +277,7 @@ resource "aws_db_subnet_group" "rds-sub-gr-terraform-homework-1" {
 #Create RDS security group(rds-sec-gr)
 resource "aws_security_group" "rds-sec-gr-terraform-homework-1" {
   name        = "rds-sec-gr-terraform-homework-1"
-  description = "Allow access from ECS cluster only"
+  description = "Allow access to ECS cluster"
   vpc_id      = aws_vpc.vpc-terraform-homework-1.id
 
   ingress {
