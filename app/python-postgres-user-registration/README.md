@@ -8,7 +8,7 @@ To install PostgreSQL easily I would recommend using the installers from Enterpr
 
 ## Installing psycopg2
 
-To install the psycopg2 library there are a few ways.
+To install the psycopg2 library there are a few ways
 
 ### On UNIX (Linux and Mac OS X)
 
