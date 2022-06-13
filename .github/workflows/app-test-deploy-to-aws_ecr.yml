@@ -88,7 +88,7 @@ jobs:
         pip install -r requirements.txt
             
     - name: Create Table
-      run: psql -U postgres -h localhost    < ../../create_table_users.sql
+      run: psql -U $POSTGRES_USER -h $POSTGRES_HOST    < ../../create_table_users.sql
       env:
         POSTGRES_HOST: ${{ env.POSTGRES_HOST }}
         PGPASSWORD   : ${{ secrets.POSTGRES_PASSWORD }}
@@ -99,6 +99,7 @@ jobs:
         python app.py test
       env:
         PG_HOST: ${{ env.POSTGRES_HOST }}
+        PG_PASS: ${{ secrets.POSTGRES_PASSWORD }}
         
     - name: Success Message
       run :  echo "App-test success:)"
