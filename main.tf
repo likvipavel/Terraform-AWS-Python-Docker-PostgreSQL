@@ -172,7 +172,8 @@ resource "aws_ecs_task_definition" "ecstd-terraform-homework-1" {
     "memory": 512,
     "essential": true,
     "environment": [
-      {"name": "PG_HOST", "value": "${data.aws_db_instance.rds-terraform-homework-1.address}"}
+      {"name": "PG_HOST", "value": "${data.aws_db_instance.rds-terraform-homework-1.address}"},
+      {"name": "PG_PASS", "value": "${var.rds_password}"}
     ]
   }
 ]

@@ -4,7 +4,7 @@ import os
 
 
 Database.initialise(database="postgres",
-                    user="postgres", password="12345678",
+                    user="postgres", password=os.environ.get('PG_PASS'),
                     host=os.environ.get('PG_HOST'))
 
 user = User('jose@schoolofcode.me', 'Jose', 'Salvatierra')

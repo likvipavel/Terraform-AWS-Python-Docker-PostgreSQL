@@ -39,7 +39,6 @@ jobs:
         run : |
           export TF_VAR_rds_password=${{ secrets.POSTGRES_PASSWORD }}
           terraform fmt -check
-        continue-on-error: true
 
       - name: Terraform Init
         id  : init
