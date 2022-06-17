@@ -28,7 +28,7 @@ pip install psycopg2
 
 ### On Windows
 
-On Windows, we first need the Git Bash. Download and install it from here: http://git-for-windows.github.io.
+On Windows, we first need the Git Bash. Download and install it from here: http://git-for-windows.github.io
 
 Then, we need to make sure our PATH environment variable contains the appropriate paths.
 
