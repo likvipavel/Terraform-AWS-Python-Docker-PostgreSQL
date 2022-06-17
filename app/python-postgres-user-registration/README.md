@@ -26,7 +26,7 @@ pip install --upgrade setuptools
 pip install psycopg2
 ```
 
-### On Windows.
+### On Windows
 
 On Windows, we first need the Git Bash. Download and install it from here: http://git-for-windows.github.io.
 
