@@ -48,7 +48,7 @@ cd ~/Downloads
 python -m easy_install <file_name_downloaded>.exe
 ```
 
-## Running the program
+## Running the program.
 
 During installation of PostgreSQL, you were prompted for a password.
 
