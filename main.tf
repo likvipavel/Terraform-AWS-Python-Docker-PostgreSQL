@@ -254,7 +254,7 @@ resource "aws_security_group" "ecs-sec-gr-terraform-homework-1" {
 
 #Create RDS postgres(rds) 
 resource "aws_db_instance" "rds-terraform-homework-1" {
-  name                   = "postgres-terraform"
+  name                   = "postgres_terraform"
   engine                 = "postgres"
   allocated_storage      = 20
   engine_version         = "13.3"
