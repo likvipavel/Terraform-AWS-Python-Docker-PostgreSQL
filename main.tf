@@ -303,7 +303,7 @@ resource "aws_security_group" "rds-sec-gr-terraform-homework-1" {
 }
 
 data "aws_db_instance" "rds-terraform-homework-1" {
-  db_instance_identifier = "postgres"
+  db_instance_identifier = aws_db_instance.rds-terraform-homework-1.id
   depends_on = [
     aws_db_instance.rds-terraform-homework-1
   ]
